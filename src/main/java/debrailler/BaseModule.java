@@ -4,7 +4,7 @@ import org.opencv.core.Mat;
 import org.opencv.dnn.Dnn;
 import org.opencv.dnn.Net;
 
-public abstract class BaseModule implements Network {
+abstract class BaseModule implements NetworkModule {
     protected Net module;
 
     BaseModule(String onnx_path) {

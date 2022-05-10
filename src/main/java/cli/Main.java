@@ -4,20 +4,25 @@ import debrailler.Backbone;
 import debrailler.BrailleDetector;
 import debrailler.ClassificationHead;
 import debrailler.RegressionHead;
-import org.opencv.core.Mat;
+import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import utils.Config;
+import utils.Detection;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
     public static void main(String[] args) {
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
         Logger logger = Logger.getLogger("main");
         logger.setLevel(Level.ALL);
 
-        if (args == null || args.length < 1) {
-            logger.severe("Image path is required as the first argument");
+        if (args == null || args.length < 2) {
+            logger.severe("Image paths (I/O) is required as first and second arguments");
             System.exit(1);
         }
 
@@ -33,7 +38,14 @@ public class Main {
         RegressionHead regHead = new RegressionHead(config.get(Config.Key.REG_HEAD_PATH));
         BrailleDetector detector = new BrailleDetector(backbone, clsHead, regHead);
 
-        Mat outputs = detector.forward(image);
-        logger.info(outputs.size().toString());
+        List<Detection> outputs = detector.detect(image, 0.4, 2000);
+
+        Mat outputImage = image.clone();
+        for (Detection d : outputs) {
+            Rect bBox = d.getRect();
+            Imgproc.rectangle(outputImage, bBox, new Scalar(0, 255, 0), 1);
+        }
+        Imgcodecs.imwrite(args[1], outputImage);
+        logger.info(String.valueOf(outputs.size()));
     }
 }
