@@ -1,9 +1,6 @@
 package cli;
 
-import debrailler.Backbone;
-import debrailler.BrailleDetector;
-import debrailler.ClassificationHead;
-import debrailler.RegressionHead;
+import debrailler.*;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
@@ -33,10 +30,11 @@ public class Main {
         }
 
         Config config = new Config(Config.INSTANCE);
+        UNet unet = new UNet(config.get(Config.Key.UNET_PATH));
         Backbone backbone = new Backbone(config.get(Config.Key.BACKBONE_PATH));
         ClassificationHead clsHead = new ClassificationHead(config.get(Config.Key.CLS_HEAD_PATH));
         RegressionHead regHead = new RegressionHead(config.get(Config.Key.REG_HEAD_PATH));
-        BrailleDetector detector = new BrailleDetector(backbone, clsHead, regHead);
+        BrailleDetector detector = new BrailleDetector(unet, backbone, clsHead, regHead);
 
         List<Detection> outputs = detector.detect(image, 0.4, 2000);
 

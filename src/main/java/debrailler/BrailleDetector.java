@@ -2,6 +2,8 @@ package debrailler;
 
 import org.opencv.core.*;
 import org.opencv.dnn.Dnn;
+import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.imgproc.Imgproc;
 import utils.AnchorGenerator;
 import utils.Detection;
 
@@ -9,9 +11,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BrailleDetector {
-    private static final int DEFAULT_IMAGE_SIZE = 1024;
-
     private final AnchorGenerator anchorGenerator;
+    
+    private final UNet prep;
 
     private final Backbone fpn;
 
@@ -19,17 +21,48 @@ public class BrailleDetector {
 
     private final RegressionHead regressionHead;
 
-    public BrailleDetector(Backbone backbone, ClassificationHead clsHead, RegressionHead regHead) {
-        anchorGenerator = new AnchorGenerator(32, 128, DEFAULT_IMAGE_SIZE);
+    public BrailleDetector(UNet unet, Backbone backbone, ClassificationHead clsHead, RegressionHead regHead) {
+        anchorGenerator = new AnchorGenerator(32, 128, Backbone.DEFAULT_IMAGE_SIZE);
+        prep = unet;
         fpn = backbone;
         classificationHead = clsHead;
         regressionHead = regHead;
     }
 
-    private static Mat normalizeMeanVariance(Mat inputs) {
-        Size defaultSize = new Size(DEFAULT_IMAGE_SIZE, DEFAULT_IMAGE_SIZE);
-        Scalar defaultMean = new Scalar(0.485 * 255, 0.456 * 255, 0.406 * 255);
-        return Dnn.blobFromImage(inputs, 1 / (0.255 * 255), defaultSize, defaultMean, false, false);
+    private static Mat preProcess(Mat inputs) {
+        int width = inputs.width();
+        int height = inputs.height();
+        int flag = height - width;
+        int top = 0;
+        int bottom = 0;
+        int left = 0;
+        int right = 0;
+        int maxSide = width;
+        if (flag != 0) {
+            int diff = Math.abs(flag);
+            int border1 = diff / 2;
+            int border2 = Math.round(diff / 2.0f);
+            if (flag > 0) {
+                left = border1;
+                right = border2;
+                maxSide = height;
+            } else {
+                top = border1;
+                bottom = border2;
+            }
+        }
+
+        Size maxSize = new Size(maxSide, maxSide);
+        Mat paddedInputs = new Mat(maxSize, CvType.CV_8UC3);
+        Core.copyMakeBorder(inputs, paddedInputs, top, bottom, left, right, Core.BORDER_CONSTANT, new Scalar(0));
+
+        Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
+        Mat prepInputs = new Mat(defaultSize, CvType.CV_8UC3);
+        Imgproc.resize(paddedInputs, prepInputs, defaultSize);
+
+        Imgcodecs.imwrite("padded.jpg", prepInputs); // TODO: delete me
+
+        return prepInputs;
     }
 
     private Rect2d decodeBBox(List<Double> boxReg, List<Double> anchor) {
@@ -68,6 +101,9 @@ public class BrailleDetector {
         int currIt = -1;
         for (double logIt : logIts) {
             currIt++;
+            // NOTE: There might not be a need to compute sigmoid
+            //       from each passing score. It would be better to
+            //       skip non-max scores.
             double score = 1.0 / (1.0 + Math.exp(-logIt));
             if (score < scoreThresh) {
                 continue;
@@ -101,8 +137,9 @@ public class BrailleDetector {
     }
 
     public List<Detection> detect(Mat inputs, double scoreThresh, int topK) {
-        inputs = normalizeMeanVariance(inputs);
-        Mat backboneOutputs = fpn.forward(inputs);
+        Mat prepInputs = preProcess(inputs);
+        Mat unetOutputs = prep.forward(prepInputs);
+        Mat backboneOutputs = fpn.forward(unetOutputs);
         Mat clsOutputs = classificationHead.forward(backboneOutputs);
         Mat regOutputs = regressionHead.forward(backboneOutputs);
         return postProcess(

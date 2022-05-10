@@ -26,6 +26,7 @@ public class Config {
     }
 
     public enum Key {
+        UNET_PATH("unetPath"),
         BACKBONE_PATH("backbonePath"),
         CLS_HEAD_PATH("clsHeadPath"),
         REG_HEAD_PATH("regHeadPath");
