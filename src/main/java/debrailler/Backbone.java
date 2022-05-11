@@ -18,7 +18,7 @@ public class Backbone extends BaseModule {
         // NOTE: Magic mean-variance normalization.
         //       Do not change unless you're a wizard!
         Scalar defaultMean = new Scalar(0.485 * 255, 0.456 * 255, 0.406 * 255);
-        return Dnn.blobFromImage(inputs, 1 / (0.255 * 255), defaultSize, defaultMean, false, false);
+        return Dnn.blobFromImage(inputs, 1 / (0.255 * 255), defaultSize, defaultMean, true, false);
     }
 
     @Override

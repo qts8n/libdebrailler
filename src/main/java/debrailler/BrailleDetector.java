@@ -29,7 +29,8 @@ public class BrailleDetector {
         regressionHead = regHead;
     }
 
-    private static Mat preProcess(Mat inputs) {
+    public static Mat preProcess(Mat inputs) {
+        // Padding to square
         int width = inputs.width();
         int height = inputs.height();
         int flag = height - width;
@@ -56,11 +57,10 @@ public class BrailleDetector {
         Mat paddedInputs = new Mat(maxSize, CvType.CV_8UC3);
         Core.copyMakeBorder(inputs, paddedInputs, top, bottom, left, right, Core.BORDER_CONSTANT, new Scalar(0));
 
+        // Resize to DEFAULT_IMAGE_SIZE
         Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
         Mat prepInputs = new Mat(defaultSize, CvType.CV_8UC3);
         Imgproc.resize(paddedInputs, prepInputs, defaultSize);
-
-        Imgcodecs.imwrite("padded.jpg", prepInputs); // TODO: delete me
 
         return prepInputs;
     }
@@ -69,6 +69,8 @@ public class BrailleDetector {
         assert boxReg.size() == 4;
         assert anchor.size() == 4;
 
+        // NOTE: Maybe we should compute these while generating
+        //       anchors beforehand
         double width = anchor.get(2) - anchor.get(0);
         double height = anchor.get(3) - anchor.get(1);
         double cX = anchor.get(0) + 0.5 * width;
@@ -128,8 +130,12 @@ public class BrailleDetector {
         MatOfInt indexMat = new MatOfInt();
         Dnn.NMSBoxes(boxMat, scoreMat, (float) scoreThresh, 0.2f, indexMat, 1.0f, topK);
 
-        List<Integer> indices = indexMat.toList();
         List<Detection> filteredDetections = new ArrayList<>();
+        if (indexMat.empty()) {
+            return filteredDetections;
+        }
+
+        List<Integer> indices = indexMat.toList();
         for (int idx : indices) {
             filteredDetections.add(detections.get(idx));
         }

@@ -18,8 +18,8 @@ public class Main {
         Logger logger = Logger.getLogger("main");
         logger.setLevel(Level.ALL);
 
-        if (args == null || args.length < 2) {
-            logger.severe("Image paths (I/O) is required as first and second arguments");
+        if (args == null || args.length < 1) {
+            logger.severe("Image path is required as the first argument");
             System.exit(1);
         }
 
@@ -38,12 +38,14 @@ public class Main {
 
         List<Detection> outputs = detector.detect(image, 0.4, 2000);
 
-        Mat outputImage = image.clone();
+        Mat outputImage = BrailleDetector.preProcess(image);
         for (Detection d : outputs) {
             Rect bBox = d.getRect();
             Imgproc.rectangle(outputImage, bBox, new Scalar(0, 255, 0), 1);
         }
-        Imgcodecs.imwrite(args[1], outputImage);
+
+        Imgcodecs.imwrite("assets/result.jpg", outputImage); // TODO: delete me
+
         logger.info(String.valueOf(outputs.size()));
     }
 }
