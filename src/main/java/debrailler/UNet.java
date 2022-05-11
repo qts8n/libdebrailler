@@ -10,6 +10,8 @@ import java.util.List;
 
 
 public class UNet extends BaseModule {
+    private static final int CELL_PADDING = 3;
+
     public UNet(String onnx_path) {
         super(onnx_path);
     }
@@ -47,10 +49,10 @@ public class UNet extends BaseModule {
         Imgproc.findContours(mask, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
         for (MatOfPoint cnt : contours) {
             Rect cntRect = Imgproc.boundingRect(cnt);
-            cntRect.x -= 3;
-            cntRect.y -= 3;
-            cntRect.width += 6;
-            cntRect.height += 6;
+            cntRect.x -= CELL_PADDING;
+            cntRect.y -= CELL_PADDING;
+            cntRect.width += CELL_PADDING * 2;
+            cntRect.height += CELL_PADDING * 2;
             Imgproc.rectangle(mask, cntRect, new Scalar(255), -1);
         }
 
