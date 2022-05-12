@@ -10,6 +10,8 @@ import java.util.List;
 
 
 public class UNet extends BaseModule {
+    private static final int DEFAULT_IMAGE_SIZE = 768;
+
     private static final int CELL_PADDING = 3;
 
     public UNet(String onnx_path) {
@@ -17,9 +19,14 @@ public class UNet extends BaseModule {
     }
 
     private Mat preProcess(Mat inputs) {
+        // Resize to DEFAULT_IMAGE_SIZE
+        Size defaultSize = new Size(DEFAULT_IMAGE_SIZE, DEFAULT_IMAGE_SIZE);
+        Mat prepInputs = new Mat(defaultSize, CvType.CV_8UC3);
+        Imgproc.resize(inputs, prepInputs, defaultSize);
+
         Mat grayInputs = new Mat(inputs.size(), CvType.CV_8U);
-        Imgproc.cvtColor(inputs, grayInputs, Imgproc.COLOR_BGR2GRAY);
-        return Dnn.blobFromImage(grayInputs, 1 / 255.0, new Size(), new Scalar(0), false, false);
+        Imgproc.cvtColor(prepInputs, grayInputs, Imgproc.COLOR_BGR2GRAY);
+        return Dnn.blobFromImage(grayInputs, 1 / 255.0, defaultSize, new Scalar(0), false, false);
     }
 
     private Mat postProcess(Mat outputs, Mat originalInputs) {
@@ -56,8 +63,15 @@ public class UNet extends BaseModule {
             Imgproc.rectangle(mask, cntRect, new Scalar(255), -1);
         }
 
+        Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
+        Mat prepInputs = new Mat(defaultSize, CvType.CV_8UC3);
+        // Resize original inputs
+        Imgproc.resize(originalInputs, prepInputs, defaultSize);
+        // Resize mask
+        Imgproc.resize(mask, mask, defaultSize);
+
         Mat processed = new Mat(mask.size(), CvType.CV_8UC3);
-        originalInputs.copyTo(processed, mask);
+        prepInputs.copyTo(processed, mask);
 
         Imgcodecs.imwrite("assets/segmentor.jpg", processed); // TODO: delete me
 

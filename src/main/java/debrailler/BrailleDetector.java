@@ -52,17 +52,10 @@ public class BrailleDetector {
                 bottom = border2;
             }
         }
-
         Size maxSize = new Size(maxSide, maxSide);
         Mat paddedInputs = new Mat(maxSize, CvType.CV_8UC3);
         Core.copyMakeBorder(inputs, paddedInputs, top, bottom, left, right, Core.BORDER_CONSTANT, new Scalar(0));
-
-        // Resize to DEFAULT_IMAGE_SIZE
-        Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
-        Mat prepInputs = new Mat(defaultSize, CvType.CV_8UC3);
-        Imgproc.resize(paddedInputs, prepInputs, defaultSize);
-
-        return prepInputs;
+        return paddedInputs;
     }
 
     private Rect2d decodeBBox(List<Double> boxReg, List<Double> anchor) {

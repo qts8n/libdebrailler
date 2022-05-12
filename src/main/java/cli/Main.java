@@ -38,7 +38,10 @@ public class Main {
 
         List<Detection> outputs = detector.detect(image, 0.4, 2000);
 
+        Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
         Mat outputImage = BrailleDetector.preProcess(image);
+        Imgproc.resize(outputImage, outputImage, defaultSize);
+
         for (Detection d : outputs) {
             Rect bBox = d.getRect();
             Imgproc.rectangle(outputImage, bBox, new Scalar(0, 255, 0), 1);
