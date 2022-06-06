@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public class BrailleDictionary {
-    public static final String CAPITALIZER = "45";
+    public static final String CAPITALIZER = "_";
 
     public static final String TYPO = "*";
 
@@ -57,7 +57,7 @@ public class BrailleDictionary {
                 Map.entry("36", "-"),
                 Map.entry("25", "-"),
                 Map.entry("2356", "-"),
-                Map.entry(CAPITALIZER, "_")
+                Map.entry("45", CAPITALIZER)
         );
     }
 
@@ -93,11 +93,11 @@ public class BrailleDictionary {
                 if (Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 1.5) {
                     sb.append(" ");
                 }
-                if (Objects.equals(prevLetter, RU.get(CAPITALIZER))) {
+                if (Objects.equals(prevLetter, CAPITALIZER)) {
                     letter = letter.toUpperCase();
                 }
             }
-            if (!Objects.equals(letter, RU.get(CAPITALIZER))) {
+            if (!Objects.equals(letter, CAPITALIZER)) {
                 sb.append(letter);
             }
             prevD = d;
