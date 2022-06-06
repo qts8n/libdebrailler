@@ -6,8 +6,8 @@ import org.opencv.core.Mat;
 public class ClassificationHead extends BaseModule {
     public static final int NUM_CLASSES = 64;
 
-    public ClassificationHead(String onnx_path) {
-        super(onnx_path);
+    public ClassificationHead(byte[] weights) {
+        super(weights);
     }
 
     private Mat postProcess(Mat outputs) {

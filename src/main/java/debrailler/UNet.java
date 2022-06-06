@@ -12,10 +12,10 @@ import java.util.List;
 public class UNet extends BaseModule {
     private static final int DEFAULT_IMAGE_SIZE = 768;
 
-    private static final int CELL_PADDING = 3;
+    private static final int CELL_PADDING = 2;
 
-    public UNet(String onnx_path) {
-        super(onnx_path);
+    public UNet(byte[] weights) {
+        super(weights);
     }
 
     private Mat preProcess(Mat inputs) {

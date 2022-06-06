@@ -6,8 +6,8 @@ import org.opencv.core.Mat;
 public class RegressionHead extends BaseModule {
     public static final int NUM_COORDS = 4;
 
-    public RegressionHead(String onnx_path) {
-        super(onnx_path);
+    public RegressionHead(byte[] weights) {
+        super(weights);
     }
 
     private Mat postProcess(Mat outputs) {

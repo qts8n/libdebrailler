@@ -10,8 +10,8 @@ import org.opencv.imgproc.Imgproc;
 public class Backbone extends BaseModule {
     public static final int DEFAULT_IMAGE_SIZE = 1024;
 
-    public Backbone(String onnx_path) {
-        super(onnx_path);
+    public Backbone(byte[] weights) {
+        super(weights);
     }
 
     private static Mat preProcess(Mat inputs) {

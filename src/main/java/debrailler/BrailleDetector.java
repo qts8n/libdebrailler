@@ -81,9 +81,6 @@ public class BrailleDetector {
     }
 
     private List<Detection> postProcess(MatOfDouble clsOutputs, MatOfDouble regOutputs, double scoreThresh, int topK) {
-        int possibleDetectionNum = clsOutputs.size(0);
-        assert possibleDetectionNum == regOutputs.size(0);
-
         List<Double> logIts = clsOutputs.toList();
         List<Double> boxRegs = regOutputs.toList();
         List<List<Double>> anchors = anchorGenerator.getAnchors();

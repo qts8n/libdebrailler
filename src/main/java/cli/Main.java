@@ -8,11 +8,30 @@ import utils.BrailleDictionary;
 import utils.Config;
 import utils.Detection;
 
+import java.io.*;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Main {
+    private static byte[] getAssetWeight(Config config, Config.Key key) {
+        String path = config.get(key);
+        InputStream in;
+
+        try {
+            in = new FileInputStream(path);
+            byte[] fileBytes = new byte[in.available()];
+            int res = in.read(fileBytes);
+            in.close();
+            if (res == -1) {
+                throw new IOException();
+            }
+            return fileBytes;
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     public static void main(String[] args) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
@@ -31,10 +50,10 @@ public class Main {
         }
 
         Config config = new Config(Config.INSTANCE);
-        UNet unet = new UNet(config.get(Config.Key.UNET_PATH));
-        Backbone backbone = new Backbone(config.get(Config.Key.BACKBONE_PATH));
-        ClassificationHead clsHead = new ClassificationHead(config.get(Config.Key.CLS_HEAD_PATH));
-        RegressionHead regHead = new RegressionHead(config.get(Config.Key.REG_HEAD_PATH));
+        UNet unet = new UNet(getAssetWeight(config, Config.Key.UNET_PATH));
+        Backbone backbone = new Backbone(getAssetWeight(config, Config.Key.BACKBONE_PATH));
+        ClassificationHead clsHead = new ClassificationHead(getAssetWeight(config, Config.Key.CLS_HEAD_PATH));
+        RegressionHead regHead = new RegressionHead(getAssetWeight(config, Config.Key.REG_HEAD_PATH));
         BrailleDetector detector = new BrailleDetector(unet, backbone, clsHead, regHead);
 
         List<Detection> outputs = detector.detect(image, 0.4, 2000);
