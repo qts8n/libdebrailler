@@ -4,6 +4,7 @@ import debrailler.*;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
+import utils.BrailleDictionary;
 import utils.Config;
 import utils.Detection;
 
@@ -50,5 +51,6 @@ public class Main {
         Imgcodecs.imwrite("assets/result.jpg", outputImage); // TODO: delete me
 
         logger.info(String.valueOf(outputs.size()));
+        logger.info(BrailleDictionary.translate(outputs));
     }
 }

@@ -2,8 +2,6 @@ package debrailler;
 
 import org.opencv.core.*;
 import org.opencv.dnn.Dnn;
-import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
 import utils.AnchorGenerator;
 import utils.Detection;
 

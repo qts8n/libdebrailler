@@ -1,5 +1,6 @@
 package utils;
 
+import java.util.List;
 import java.util.Map;
 
 public class BrailleDictionary {
@@ -59,7 +60,7 @@ public class BrailleDictionary {
         );
     }
 
-    public String numberToLetter(int label) {
+    public static String numberToLetter(int label) {
         String rawBinString = Integer.toBinaryString(label);
         int currLen = rawBinString.length();
         assert currLen <= 6;
@@ -71,5 +72,27 @@ public class BrailleDictionary {
             }
         }
         return RU.getOrDefault(sb.toString(), TYPO);
+    }
+
+    public static String translate(List<Detection> detections) {
+        detections.sort((o1, o2) -> {
+            double dy = o2.bBox.y - o1.bBox.y;
+            if (Math.abs(dy) > o1.bBox.height * 0.9) {
+                return dy < 0 ? 1 : -1;
+            }
+            return Double.compare(o1.bBox.x, o2.bBox.x);
+        });
+
+        Detection prevD = null;
+        StringBuilder sb = new StringBuilder();
+        for (Detection d : detections) {
+            String letter = numberToLetter(d.label);
+            if (prevD != null && Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 1.5) {
+                sb.append(" ");
+            }
+            sb.append(letter);
+            prevD = d;
+        }
+        return sb.toString();
     }
 }
