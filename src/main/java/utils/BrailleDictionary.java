@@ -2,6 +2,7 @@ package utils;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 public class BrailleDictionary {
     public static final String CAPITALIZER = "45";
@@ -84,14 +85,23 @@ public class BrailleDictionary {
         });
 
         Detection prevD = null;
+        String prevLetter = null;
         StringBuilder sb = new StringBuilder();
         for (Detection d : detections) {
             String letter = numberToLetter(d.label);
-            if (prevD != null && Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 1.5) {
-                sb.append(" ");
+            if (prevD != null) {
+                if (Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 1.5) {
+                    sb.append(" ");
+                }
+                if (Objects.equals(prevLetter, RU.get(CAPITALIZER))) {
+                    letter = letter.toUpperCase();
+                }
             }
-            sb.append(letter);
+            if (!Objects.equals(letter, RU.get(CAPITALIZER))) {
+                sb.append(letter);
+            }
             prevD = d;
+            prevLetter = letter;
         }
         return sb.toString();
     }
