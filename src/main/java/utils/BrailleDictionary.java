@@ -90,7 +90,7 @@ public class BrailleDictionary {
         for (Detection d : detections) {
             String letter = numberToLetter(d.label);
             if (prevD != null) {
-                if (Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 1.5) {
+                if (Math.abs(d.bBox.x - prevD.bBox.x) > d.bBox.width * 2.5) {
                     sb.append(" ");
                 }
                 if (Objects.equals(prevLetter, CAPITALIZER)) {
