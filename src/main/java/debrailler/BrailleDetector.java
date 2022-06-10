@@ -116,7 +116,7 @@ public class BrailleDetector {
         MatOfFloat scoreMat = new MatOfFloat();
         scoreMat.fromList(scores);
         MatOfInt indexMat = new MatOfInt();
-        Dnn.NMSBoxes(boxMat, scoreMat, (float) scoreThresh, 0.2f, indexMat, 1.0f, topK);
+        Dnn.NMSBoxes(boxMat, scoreMat, (float) scoreThresh, 0.0f, indexMat, 1.0f, topK);
 
         List<Detection> filteredDetections = new ArrayList<>();
         if (indexMat.empty()) {

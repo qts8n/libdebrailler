@@ -56,7 +56,7 @@ public class Main {
         RegressionHead regHead = new RegressionHead(getAssetWeight(config, Config.Key.REG_HEAD_PATH));
         BrailleDetector detector = new BrailleDetector(unet, backbone, clsHead, regHead);
 
-        List<Detection> outputs = detector.detect(image, 0.4, 2000);
+        List<Detection> outputs = detector.detect(image, 0.3, 2000);
 
         Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
         Mat outputImage = BrailleDetector.preProcess(image);
