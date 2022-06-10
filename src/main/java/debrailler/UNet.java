@@ -10,9 +10,7 @@ import java.util.List;
 
 
 public class UNet extends BaseModule {
-    private static final int DEFAULT_IMAGE_SIZE = 768;
-
-    private static final int CELL_PADDING = 2;
+    private static final int DEFAULT_IMAGE_SIZE = 640;
 
     public UNet(byte[] weights) {
         super(weights);
@@ -48,19 +46,25 @@ public class UNet extends BaseModule {
                 mask.put(row, col, 255);
             }
         }
-        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(5, 5));
+
+        Mat kernel = Imgproc.getStructuringElement(Imgproc.MORPH_RECT, new Size(3, 3));
         Imgproc.erode(mask, mask, kernel, new Point(-1, -1), 2);
         Imgproc.dilate(mask, mask, kernel, new Point(-1, -1), 3);
 
         List<MatOfPoint> contours = new ArrayList<>();
         Imgproc.findContours(mask, contours, new Mat(), Imgproc.RETR_EXTERNAL, Imgproc.CHAIN_APPROX_SIMPLE);
+        mask = Mat.zeros(new Size(width, height), CvType.CV_8U);
         for (MatOfPoint cnt : contours) {
-            Rect cntRect = Imgproc.boundingRect(cnt);
-            cntRect.x -= CELL_PADDING;
-            cntRect.y -= CELL_PADDING;
-            cntRect.width += CELL_PADDING * 2;
-            cntRect.height += CELL_PADDING * 2;
-            Imgproc.rectangle(mask, cntRect, new Scalar(255), -1);
+            MatOfPoint2f dst = new MatOfPoint2f();
+            cnt.convertTo(dst, CvType.CV_32F);
+            RotatedRect rect = Imgproc.minAreaRect(dst);
+            MatOfPoint cntRect = new MatOfPoint();
+            Point[] vertices = new Point[4];
+            rect.points(vertices);
+            cntRect.fromArray(vertices);
+            List<MatOfPoint> boxContours = new ArrayList<>();
+            boxContours.add(cntRect);
+            Imgproc.drawContours(mask, boxContours, 0, new Scalar(255), -1);
         }
 
         Size defaultSize = new Size(Backbone.DEFAULT_IMAGE_SIZE, Backbone.DEFAULT_IMAGE_SIZE);
@@ -70,7 +74,7 @@ public class UNet extends BaseModule {
         // Resize mask
         Imgproc.resize(mask, mask, defaultSize);
 
-        Mat processed = new Mat(mask.size(), CvType.CV_8UC3);
+        Mat processed = Mat.zeros(mask.size(), CvType.CV_8UC3);
         prepInputs.copyTo(processed, mask);
 
         Imgcodecs.imwrite("assets/segmentor.jpg", processed); // TODO: delete me
